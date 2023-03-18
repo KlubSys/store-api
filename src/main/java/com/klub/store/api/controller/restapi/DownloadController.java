@@ -52,11 +52,11 @@ public class DownloadController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<DownloadTaskDto>> getDownloads(@RequestParam("blocGroupRef") String[] blocGroupRef){
+    public ResponseEntity<List<DownloadTaskDto>> getDownloads(@RequestParam("blocGroupRef") String[] blocGroupRef) {
         List<DownloadTaskDto> response = klubDownloadUploadTaskService
                 .getDownloadsForBlocGroupRef(List.of(blocGroupRef))
                 .stream().map(DownloadTaskDto::from).collect(Collectors.toList());
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
 
@@ -66,14 +66,14 @@ public class DownloadController {
         if (dwnCtn.isEmpty()) throw new NotFoundException("No such download task");
 
         DownloadTaskDto response = DownloadTaskDto.from(dwnCtn.get());
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
 
     @PutMapping("{id}/_data")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> uploadData(@PathVariable("id") String id,
-                                             @RequestBody String body)
+                                           @RequestBody String body)
             throws NotFoundException {
         Optional<KlubDownloadUploadTask> dwnCtn = klubDownloadUploadTaskRepository.findById(id);
         if (dwnCtn.isEmpty()) throw new NotFoundException("No such download task");
@@ -81,7 +81,51 @@ public class DownloadController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @GetMapping(value = "{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE )
+    @GetMapping(value = "{id}/download_data", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<InputStreamResource> downloadDataAsFile(@PathVariable("id") String id, HttpServletResponse response) throws IOException, NotFoundException {
+        Optional<KlubDownloadUploadTask> dwnCtn = klubDownloadUploadTaskRepository.findById(id);
+        if (dwnCtn.isEmpty()) throw new NotFoundException("No such download task");
+        if (dwnCtn.get().getData() == null) throw new NotFoundException("No such download task Data");
+
+        int idx = (new Random()).nextInt();
+        File fileData = new File("file" + idx + ".dat");// File.createTempFile("temp", "file.txt");
+
+        byte[] bytesData = Base64.getDecoder().decode(dwnCtn.get().getData());
+        FileUtils.writeByteArrayToFile(fileData, bytesData);
+
+        //InputStream file = new FileInputStream(fileData);
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        headers.add("Content-Disposition", "attachment; filename=\"dowbload_id\"");
+        headers.add("Content-Length", String.valueOf(bytesData.length));
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(fileData));
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(bytesData.length)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+
+        /*
+
+        int readBytes = 0;
+        byte[] toDownload = new byte[100];
+        OutputStream downloadStream = response.getOutputStream();
+
+        while((readBytes = file.read(toDownload))!= -1){
+            downloadStream.write(toDownload, 0, readBytes);
+        }
+        downloadStream.flush();
+        downloadStream.close();
+        */
+
+    }
+
+    @GetMapping(value = "{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<InputStreamResource> download(@PathVariable("id") String id, HttpServletResponse response) throws IOException {
         int idx = (new Random()).nextInt();
         File fileData = new File("file" + idx + ".dat");// File.createTempFile("temp", "file.txt");
