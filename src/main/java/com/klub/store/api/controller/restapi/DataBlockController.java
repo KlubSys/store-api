@@ -77,7 +77,7 @@ public class DataBlockController {
 
         List<KlubDataBlock> dataBlock = this.klubDataBlockService.getAll();
 
-        List<DataBlockDto> data = dataBlock.stream().map((d) -> new DataBlockDto(d)).collect(Collectors.toList());
+        List<DataBlockDto> data = dataBlock.stream().map(DataBlockDto::new).collect(Collectors.toList());
 
         GetAllDataBlockResponse response = new GetAllDataBlockResponse(data);
         return new ResponseEntity<>(response, HttpStatus.OK);

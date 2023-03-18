@@ -12,13 +12,14 @@ import lombok.NoArgsConstructor;
 public class DownloadTaskDto {
 
     private String id;
-    @JsonProperty("has_data")
+    @JsonProperty("hasData")
     private boolean hasData;
+    private String data;
     private String blocGroupRef;
 
     public static DownloadTaskDto from(KlubDownloadUploadTask task){
         if (task == null) return null;
         return new DownloadTaskDto(task.getId(),
-                task.getData() != null, task.getBlocGroup().getIdentifier());
+                task.getData() != null, task.getData(), task.getBlocGroup().getIdentifier());
     }
 }

@@ -9,6 +9,8 @@ import com.klub.store.api.repository.KlubDownloadUploadTaskRepository;
 import com.klub.store.api.service.KlubDownloadUploadTaskService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -83,15 +82,29 @@ public class DownloadController {
     }
 
     @GetMapping(value = "{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE )
-    public void download(@PathVariable("id") String id, HttpServletResponse response) throws IOException {
+    public ResponseEntity<InputStreamResource> download(@PathVariable("id") String id, HttpServletResponse response) throws IOException {
+        int idx = (new Random()).nextInt();
+        File fileData = new File("file" + idx + ".dat");// File.createTempFile("temp", "file.txt");
+        FileUtils.writeStringToFile(fileData, "abcdefghijklmnopqrstuvwxyz".repeat(10), "UTF-8");
 
-        File fileData = new File("file.dat");// File.createTempFile("temp", "file.txt");
-        FileUtils.writeStringToFile(fileData, "abcdefghijklmnopqrstuvwxyz".repeat(10000), "UTF-8");
+        //InputStream file = new FileInputStream(fileData);
 
-        InputStream file = new FileInputStream(fileData);
 
-        response.setHeader("Content-Disposition", "attachment; filename=\"dowbload_id\"");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        headers.add("Content-Disposition", "attachment; filename=\"dowbload_id\"");
+        headers.add("Content-Length", String.valueOf(260));
 
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(fileData));
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(260)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+
+        /*
 
         int readBytes = 0;
         byte[] toDownload = new byte[100];
@@ -102,6 +115,7 @@ public class DownloadController {
         }
         downloadStream.flush();
         downloadStream.close();
+        */
 
     }
 }

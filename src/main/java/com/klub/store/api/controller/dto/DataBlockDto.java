@@ -17,6 +17,7 @@ public class DataBlockDto {
     private Long id;
     private String identifier;
     private Integer size;
+    private String data;
 
     private String blockGroupRef;
     private String dataStoreRef;
@@ -25,6 +26,7 @@ public class DataBlockDto {
     public DataBlockDto(KlubDataBlock block) {
         this.id = block.getId();
         this.size = block.getSize();
+        this.data = block.getData();
         this.identifier = block.getIdentifier();
 
         this.blockGroupRef = block.getGroup().getIdentifier();
