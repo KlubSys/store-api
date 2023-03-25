@@ -27,7 +27,7 @@ class KlubKlubBlockGroupServiceTest {
 
     @BeforeEach
     void setup(){
-        klubBlockGroupService = new KlubBlockGroupService(klubBlockGroupRepository, klubDataBlockRepository, klubDataStoreRepository);
+        //klubBlockGroupService = new KlubBlockGroupService(klubBlockGroupRepository, klubDataBlockRepository, klubDataStoreRepository, centralLoggerServerApi);
     }
 
     @Test

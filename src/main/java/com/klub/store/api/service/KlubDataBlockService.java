@@ -7,6 +7,8 @@ import com.klub.store.api.model.entity.KlubDataBlockStore;
 import com.klub.store.api.repository.KlubBlockGroupRepository;
 import com.klub.store.api.repository.KlubDataBlockRepository;
 import com.klub.store.api.repository.KlubDataStoreRepository;
+import com.klub.store.api.service.api.CentralLoggerServerApi;
+import com.klub.store.api.service.api.dto.CentralServerLogMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +24,16 @@ public class KlubDataBlockService {
     private final KlubDataBlockRepository klubDataBlockRepository;
     private final KlubDataStoreRepository klubDataStoreRepository;
     private final KlubBlockGroupRepository klubBlockGroupRepository;
+    private final CentralLoggerServerApi centralLoggerServerApi;
 
     @Autowired
     public KlubDataBlockService(KlubDataBlockRepository klubDataBlockRepository,
                                 KlubDataStoreRepository klubDataStoreRepository,
-                                KlubBlockGroupRepository klubBlockGroupRepository) {
+                                KlubBlockGroupRepository klubBlockGroupRepository, CentralLoggerServerApi centralLoggerServerApi) {
         this.klubDataBlockRepository = klubDataBlockRepository;
         this.klubDataStoreRepository = klubDataStoreRepository;
         this.klubBlockGroupRepository = klubBlockGroupRepository;
+        this.centralLoggerServerApi = centralLoggerServerApi;
     }
 
     public void createBlock(KlubDataBlock block, String storeRef){
@@ -97,7 +101,12 @@ public class KlubDataBlockService {
         block.setReference(downloadRef);
 
         this.klubDataStoreRepository.save(klubDataBlockStore);
+
+        centralLoggerServerApi.dispatchLog(CentralServerLogMessage.builder()
+                .text("Created a databloc").build());
+
         return this.klubDataBlockRepository.save(block);
+
     }
 
     /**

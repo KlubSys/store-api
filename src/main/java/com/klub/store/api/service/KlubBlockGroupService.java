@@ -5,6 +5,8 @@ import com.klub.store.api.model.entity.KlubBlockGroup;
 import com.klub.store.api.repository.KlubBlockGroupRepository;
 import com.klub.store.api.repository.KlubDataBlockRepository;
 import com.klub.store.api.repository.KlubDataStoreRepository;
+import com.klub.store.api.service.api.CentralLoggerServerApi;
+import com.klub.store.api.service.api.dto.CentralServerLogMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +21,18 @@ public class KlubBlockGroupService {
     private final KlubBlockGroupRepository klubBlockGroupRepository;
     private final KlubDataBlockRepository klubDataBlockRepository;
     private final KlubDataStoreRepository klubDataStoreRepository;
+    private final CentralLoggerServerApi centralLoggerServerApi;
 
     @Autowired
     private EntityManager entityManager;
 
     @Autowired
     public KlubBlockGroupService(KlubBlockGroupRepository klubBlockGroupRepository, KlubDataBlockRepository klubDataBlockRepository,
-                                 KlubDataStoreRepository klubDataStoreRepository) {
+                                 KlubDataStoreRepository klubDataStoreRepository, CentralLoggerServerApi centralLoggerServerApi) {
         this.klubBlockGroupRepository = klubBlockGroupRepository;
         this.klubDataBlockRepository = klubDataBlockRepository;
         this.klubDataStoreRepository = klubDataStoreRepository;
+        this.centralLoggerServerApi = centralLoggerServerApi;
     }
 
 
@@ -70,6 +74,8 @@ public class KlubBlockGroupService {
         System.out.println(body.getData());
         group.setDataSize(body.getDataSize());
         group.setMaxBlock(1000); //TODO use static variable or a config param
+        centralLoggerServerApi.dispatchLog(CentralServerLogMessage.builder()
+                .text("Bloc group saved").build());
 
         return this.klubBlockGroupRepository.save(group);
     }
